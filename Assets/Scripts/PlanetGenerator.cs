@@ -20,6 +20,9 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField]
     private int seed = 1337;
 
+    [SerializeField]
+    private Material material;
+
     private FastNoise noise;
 
     private void Awake()
@@ -37,7 +40,7 @@ public class PlanetGenerator : MonoBehaviour
         var faces = new List<Face>();
 
         var faceForward = new GameObject().AddComponent<Face>();
-        faceForward.Initialize(gameObject, gridSize, radius, "forward");
+        faceForward.Initialize(gameObject, gridSize, radius, "forward", material);
         faces.Add(faceForward);
 
         //var faceBack = new GameObject().AddComponent<Face>();
@@ -45,7 +48,7 @@ public class PlanetGenerator : MonoBehaviour
         //faces.Add(faceBack);
 
         var faceUp = new GameObject().AddComponent<Face>();
-        faceUp.Initialize(gameObject, gridSize, radius, "up");
+        faceUp.Initialize(gameObject, gridSize, radius, "up", material);
         faces.Add(faceUp);
 
         //new GameObject().AddComponent<Face>().Initialize(gameObject, gridSize, radius, "down");

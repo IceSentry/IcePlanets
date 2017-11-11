@@ -8,7 +8,7 @@ public class Face : MonoBehaviour
     private int size;
     private float radius;
 
-    public void Initialize(GameObject parent, int size, float radius, string name)
+    public void Initialize(GameObject parent, int size, float radius, string name, Material material)
     {
         this.size = size;
         this.radius = radius;
@@ -17,11 +17,9 @@ public class Face : MonoBehaviour
             gameObject.transform.parent = parent.gameObject.transform;
 
         gameObject.name = name;
-
-        var vertexColorShader = Shader.Find("Custom/VertexColor");
-
+        
         GetComponent<MeshFilter>().mesh = mesh = new Mesh { name = "Procedural Face" };
-        GetComponent<MeshRenderer>().materials[0] = new Material(vertexColorShader);
+        GetComponent<MeshRenderer>().materials = new []{ material };
         GetComponent<MeshCollider>().sharedMesh = mesh;
 
         Generate();
@@ -37,7 +35,13 @@ public class Face : MonoBehaviour
         {
             for (int x = 0; x <= size; x++, i++)
             {
-                SetVertex(i, x, y, 0);
+                for (int z = 0; z <= size; z++)
+                {
+                    var v3 = new Vector3(x, y, z);
+                    v3 = v3 * new Vector3(1, 0, 1);
+                    SetVertex(i, x, size, y);
+                }
+
                 uvs[i] = new Vector2((float)x / size, (float)y / size);
             }
         }

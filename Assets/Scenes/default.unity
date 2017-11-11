@@ -200,9 +200,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1220529497}
-  - component: {fileID: 1220529496}
-  - component: {fileID: 1220529495}
-  - component: {fileID: 1220529494}
   - component: {fileID: 1220529498}
   m_Layer: 0
   m_Name: Planet
@@ -211,63 +208,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &1220529494
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1220529493}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Convex: 0
-  m_InflateMesh: 0
-  m_SkinWidth: 0.01
-  m_Mesh: {fileID: 0}
---- !u!23 &1220529495
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1220529493}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 2100000, guid: 8eeb5be6a70a61340a7f056050d45b3e, type: 2}
-  - {fileID: 2100000, guid: 8eeb5be6a70a61340a7f056050d45b3e, type: 2}
-  - {fileID: 2100000, guid: 8eeb5be6a70a61340a7f056050d45b3e, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 0
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
---- !u!33 &1220529496
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1220529493}
-  m_Mesh: {fileID: 0}
 --- !u!4 &1220529497
 Transform:
   m_ObjectHideFlags: 0
@@ -297,6 +237,7 @@ MonoBehaviour:
   noisemod: 8
   frequency: 24
   seed: 1337
+  material: {fileID: 2100000, guid: 8eeb5be6a70a61340a7f056050d45b3e, type: 2}
 --- !u!1 &1526378045
 GameObject:
   m_ObjectHideFlags: 0
