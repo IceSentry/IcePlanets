@@ -1,16 +1,14 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
-public class Grid : MonoBehaviour
+public class Face : MonoBehaviour
 {
+    private Mesh mesh;
+    private Vector3[] vertices;
     private int size;
     private float radius;
 
-    private Mesh mesh;
-    private Vector3[] vertices;
-    private Color32[] colors;
-
-    public void Initialize(GameObject parent, int size, float radius)
+    public void Initialize(GameObject parent, int size, float radius, string name)
     {
         this.size = size;
         this.radius = radius;
@@ -18,8 +16,12 @@ public class Grid : MonoBehaviour
         if (parent != null)
             gameObject.transform.parent = parent.gameObject.transform;
 
-        GetComponent<MeshFilter>().mesh = mesh = new Mesh { name = "Procedural Grid" };
-        GetComponent<MeshRenderer>().materials[0] = new Material(Shader.Find("Custom/VertexColor"));
+        gameObject.name = name;
+
+        var vertexColorShader = Shader.Find("Custom/VertexColor");
+
+        GetComponent<MeshFilter>().mesh = mesh = new Mesh { name = "Procedural Face" };
+        GetComponent<MeshRenderer>().materials[0] = new Material(vertexColorShader);
         GetComponent<MeshCollider>().sharedMesh = mesh;
 
         Generate();
@@ -28,7 +30,6 @@ public class Grid : MonoBehaviour
     private void Generate()
     {
         vertices = new Vector3[(size + 1) * (size + 1)];
-        colors = new Color32[vertices.Length];
         var triangles = new int[size * size * 6];
         var uvs = new Vector2[vertices.Length];
 
@@ -36,7 +37,7 @@ public class Grid : MonoBehaviour
         {
             for (int x = 0; x <= size; x++, i++)
             {
-                SetVertex(i, x, y, 1);
+                SetVertex(i, x, y, 0);
                 uvs[i] = new Vector2((float)x / size, (float)y / size);
             }
         }
@@ -53,10 +54,9 @@ public class Grid : MonoBehaviour
         }
 
         mesh.vertices = vertices;
+        mesh.normals = vertices;
         mesh.uv = uvs;
         mesh.triangles = triangles;
-        mesh.colors32 = colors;
-        mesh.RecalculateNormals();
     }
 
     private void SetVertex(int i, int x, int y, int z)
@@ -71,9 +71,5 @@ public class Grid : MonoBehaviour
         v.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
 
         vertices[i] = v * radius;
-
-        //var noiseValue = noise.GetValueFractal(v.x, v.y, v.z);
-        //vertices[i] = v.normalized * (radius + noiseValue * noisemod);
-        //colors[i] = Color.Lerp(Color.blue, Color.green, noiseValue);
     }
 }
