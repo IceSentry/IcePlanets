@@ -25,56 +25,61 @@ public class PlanetGenerator : MonoBehaviour
 
     private FastNoise noise;
 
+    private Face[] faces = new Face[6];
+
     private void Awake()
     {
         noise = new FastNoise(seed);
         noise.SetFrequency(frequency);
 
-        Generate();
+        GenerateFaces();
     }
 
-    void Generate()
+    void GenerateFaces()
     {
-        Debug.Log("Generate started");
+        var front = new GameObject().AddComponent<Face>();
+        front.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.FRONT);
+        faces[0] = front;
 
-        var faces = new List<Face>();
+        var back = new GameObject().AddComponent<Face>();
+        back.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.BACK);
+        faces[1] = back;
 
-        var faceForward = new GameObject().AddComponent<Face>();
-        faceForward.Initialize(gameObject, gridSize, radius, "forward", material);
-        faces.Add(faceForward);
+        var top = new GameObject().AddComponent<Face>();
+        top.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.TOP);
+        faces[2] = top;
 
-        //var faceBack = new GameObject().AddComponent<Face>();
-        //faceBack.Initialize(gameObject, gridSize, radius, "back");
-        //faces.Add(faceBack);
+        var bottom = new GameObject().AddComponent<Face>();
+        bottom.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.BOTTOM);
+        faces[3] = bottom;
 
-        var faceUp = new GameObject().AddComponent<Face>();
-        faceUp.Initialize(gameObject, gridSize, radius, "up", material);
-        faces.Add(faceUp);
+        var left = new GameObject().AddComponent<Face>();
+        left.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.LEFT);
+        faces[4] = left;
 
-        //new GameObject().AddComponent<Face>().Initialize(gameObject, gridSize, radius, "down");
-        //new GameObject().AddComponent<Face>().Initialize(gameObject, gridSize, radius, "left");
-        //new GameObject().AddComponent<Face>().Initialize(gameObject, gridSize, radius, "right");
+        var right = new GameObject().AddComponent<Face>();
+        right.Initialize(gameObject, gridSize, radius, material, noise, Face.Directions.RIGHT);
+        faces[5] = right;
 
-        foreach (var face in faces)
-        {
-            var mesh = face.GetComponent<MeshFilter>().mesh;
-            var vertices = mesh.vertices;
-            var normals = new Vector3[vertices.Length];
-            var colors = new Color32[vertices.Length];
+        //foreach (var face in faces)
+        //{
+        //    var mesh = face.GetComponent<MeshFilter>().mesh;
+        //    var vertices = mesh.vertices;
+        //    var normals = new Vector3[vertices.Length];
+        //    var colors = new Color32[vertices.Length];
             
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                var v = vertices[i];
-                var noiseValue = noise.GetValueFractal(v.x, v.y, v.z);
-                vertices[i] = v.normalized * (radius + noiseValue * noisemod);
-                normals[i] = vertices[i];
-                colors[i] = Color.Lerp(Color.blue, Color.green, noiseValue);
-            }
+        //    for (int i = 0; i < vertices.Length; i++)
+        //    {
+        //        var v = vertices[i];
+        //        var noiseValue = noise.GetValueFractal(v.x, v.y, v.z);
+        //        vertices[i] = v.normalized * (radius + noiseValue * noisemod);
+        //        normals[i] = vertices[i];
+        //        colors[i] = Color.Lerp(Color.blue, Color.green, noiseValue);
+        //    }
 
-            mesh.vertices = vertices;
-            mesh.colors32 = colors;
-        }
-
-        Debug.Log("Generate finished");
+        //    mesh.vertices = vertices;
+        //    mesh.colors32 = colors;
+        //}
     }
+
 }
