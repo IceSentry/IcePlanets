@@ -104,9 +104,9 @@ public class FastNoise
 	public void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
 
 
-	// Sets octave count for all fractal noise types
-	// Default: 3
-	public void SetFractalOctaves(int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
+    // Sets octave count for all fractal noise types
+    // Default: 3
+    public void SetFractalOctaves(int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
 
 	// Sets octave lacunarity for all fractal noise types
 	// Default: 2.0
@@ -153,8 +153,8 @@ public class FastNoise
 	public void SetCellularNoiseLookup(FastNoise noise) { m_cellularNoiseLookup = noise; }
 
 
-	// Sets the maximum perturb distance from original location when using GradientPerturb{Fractal}(...)
-	// Default: 1.0
+	/// Sets the maximum perturb distance from original location when using GradientPerturb{Fractal}(...)
+	/// Default: 1.0
 	public void SetGradientPerturbAmp(FN_DECIMAL gradientPerturbAmp) { m_gradientPerturbAmp = gradientPerturbAmp; }
 
 	private struct Float2
