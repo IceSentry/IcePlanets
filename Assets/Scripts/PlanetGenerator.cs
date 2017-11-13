@@ -1,27 +1,31 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using Data;
 
 public class PlanetGenerator : MonoBehaviour
 {
     public PlanetSettings PlanetSettings;
 
+    private List<Planet> _planets;
+
     public void GeneratePlanet()
     {
-        DestroyAllChildren();
-        var planet = new GameObject("Procedural planet").AddComponent<Planet>();
-        planet.transform.parent = gameObject.transform;
+        DestroyAllPlanets();
 
+        var planet = new GameObject("Procedural planet").AddComponent<Planet>();
         planet.Initialize(PlanetSettings).Generate();
     }
 
-    public void DestroyAllChildren()
+    public void DestroyAllPlanets()
     {
-        var children = new List<GameObject>();
-        foreach (Transform child in transform) children.Add(child.gameObject);
+        _planets = new List<Planet>();
+        _planets = FindObjectsOfType<Planet>().ToList();
+
+        var planets = _planets.Select(planet => planet.gameObject).ToList();
         if (Application.isEditor)
-            children.ForEach(DestroyImmediate);
+            planets.ForEach(DestroyImmediate);
         else
-            children.ForEach(Destroy);
+            planets.ForEach(Destroy);
     }
 }

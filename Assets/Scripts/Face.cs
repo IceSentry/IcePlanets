@@ -153,20 +153,17 @@ public class Face : MonoBehaviour
 
         var noiseValue = _noise.GetValueAt(s.x, s.y, s.z);
 
-        //var waterlevel = 0.05f;
-        //if (noiseValue > waterlevel)
-        //    noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
-        //else
-        //    noiseValue = 0.0f;
-
-        _vertices[i] = s * (_planetSettings.Radius + 
-            (noiseValue * (_planetSettings.Radius / _planetSettings.HeightModifier)));
         _colors[i] = _planetGradient.Evaluate(noiseValue);
 
-        //_vertices[i] = s * (_planetSettings.Radius + 
-        //    _planetSettings.HeightCurve.Evaluate(noiseValue) * 
-        //    (_planetSettings.Radius /_planetSettings.HeightModifier));
+        var waterlevel = _planetSettings.WaterLevel;
+        if (noiseValue > waterlevel)
+            noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
+        else
+            noiseValue = 0.0f;
 
+        _vertices[i] = s * (_planetSettings.Radius +
+            noiseValue * (_planetSettings.HeightModifier / _planetSettings.Radius) * _planetSettings.Radius);
+        
         //if (noiseValue < 0.5f)
         //    _colors[i] = Color.blue;
         //else if (noiseValue < 0.55f)

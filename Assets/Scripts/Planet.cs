@@ -24,6 +24,7 @@ public class Planet : MonoBehaviour
         _faces = new Face[6];
 
         GenerateFaces();
+        //gameObject.transform.position = new Vector3(0,0,_planetSettings.Radius);
     }
 
     private void GenerateFaces()

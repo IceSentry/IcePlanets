@@ -10,15 +10,7 @@ namespace Data {
         public float HeightModifier;
         public NoiseSettings NoiseSettings;
         public Material Material;
-        
-        public PlanetSettings(int size, float radius, AnimationCurve heightCurve, float heightModifier, NoiseSettings noiseSettings, Material material)
-        {
-            Size = size;
-            Radius = radius;
-            HeightCurve = heightCurve;
-            HeightModifier = heightModifier;
-            NoiseSettings = noiseSettings;
-            Material = material;
-        }
+        [Range(-1,1)]
+        public float WaterLevel;
     }
 }

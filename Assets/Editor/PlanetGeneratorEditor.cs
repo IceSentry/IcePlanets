@@ -17,9 +17,9 @@ public class PlanetGeneratorEditor : Editor {
             mapGen.GeneratePlanet();
         }
 
-        if (GUILayout.Button("Destroy all children"))
+        if (GUILayout.Button("Destroy all planets"))
         {
-            mapGen.DestroyAllChildren();
+            mapGen.DestroyAllPlanets();
         }
     }
 }
