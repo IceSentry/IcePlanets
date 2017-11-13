@@ -6,6 +6,7 @@ public class Face : MonoBehaviour
 {
     private Mesh _mesh;
     private Vector3[] _vertices;
+    private Vector3[] _normals;
     private Color32[] _colors;
 
     private Directions _direction;
@@ -55,6 +56,7 @@ public class Face : MonoBehaviour
     private void CreateVertices()
     {
         _vertices = new Vector3[(_planetSettings.Size + 1) * (_planetSettings.Size + 1)];
+        _normals = new Vector3[_vertices.Length];
         _colors = new Color32[_vertices.Length];
 
         var uvs = new Vector2[_vertices.Length];
@@ -142,33 +144,39 @@ public class Face : MonoBehaviour
         float y2 = v.y * v.y;
         float z2 = v.z * v.z;
         Vector3 s;
-        v.x = v.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
-        v.y = v.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
-        v.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
+        s.x = v.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
+        s.y = v.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
+        s.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
 
-        var noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
+        _normals[i] = s;
+        //_vertices[i] = s * _planetSettings.Radius;
 
-        var waterlevel = 0.2f;
+        var noiseValue = _noise.GetValueAt(s.x, s.y, s.z);
+
+        //var waterlevel = 0.05f;
         //if (noiseValue > waterlevel)
         //    noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
         //else
         //    noiseValue = 0.0f;
 
-        //_vertices[i] = v * (_planetSettings.Radius + (noiseValue * _planetSettings.HeightModifier));
+        _vertices[i] = s * (_planetSettings.Radius + 
+            (noiseValue * (_planetSettings.Radius / _planetSettings.HeightModifier)));
         _colors[i] = _planetGradient.Evaluate(noiseValue);
 
-        _vertices[i] = v * (_planetSettings.Radius + _planetSettings.HeightCurve.Evaluate(noiseValue) * _planetSettings.HeightModifier);
+        //_vertices[i] = s * (_planetSettings.Radius + 
+        //    _planetSettings.HeightCurve.Evaluate(noiseValue) * 
+        //    (_planetSettings.Radius /_planetSettings.HeightModifier));
 
-        if (noiseValue < 0.5f)
-            _colors[i] = Color.blue;
-        else if (noiseValue < 0.55f)
-            _colors[i] = Color.yellow;
-        else if (noiseValue < 0.70f)
-            _colors[i] = Color.green;
-        else if (noiseValue < 0.86f)
-            _colors[i] = Color.gray;
-        else
-            _colors[i] = Color.white;
+        //if (noiseValue < 0.5f)
+        //    _colors[i] = Color.blue;
+        //else if (noiseValue < 0.55f)
+        //    _colors[i] = Color.yellow;
+        //else if (noiseValue < 0.70f)
+        //    _colors[i] = Color.green;
+        //else if (noiseValue < 0.86f)
+        //    _colors[i] = Color.gray;
+        //else
+        //    _colors[i] = Color.white;
     }
 
     public Gradient CreateColourGradient()

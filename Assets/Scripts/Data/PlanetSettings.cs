@@ -10,7 +10,7 @@ namespace Data {
         public float HeightModifier;
         public NoiseSettings NoiseSettings;
         public Material Material;
-
+        
         public PlanetSettings(int size, float radius, AnimationCurve heightCurve, float heightModifier, NoiseSettings noiseSettings, Material material)
         {
             Size = size;
