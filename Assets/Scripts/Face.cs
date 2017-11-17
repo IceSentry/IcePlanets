@@ -17,6 +17,8 @@ public class Face : MonoBehaviour
 
     private Face[] _subFaces;
 
+    private Vector2 _localPos;
+
     public enum Directions
     {
         Front,
@@ -27,12 +29,12 @@ public class Face : MonoBehaviour
         Left
     }
 
-    public void Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction)
+    public void Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction, Vector2 localPos)
     {
         _planetSettings = planetSettings;
         _direction = direction;
         _noise = new CustomNoise(planetSettings.NoiseSettings);
-
+        _localPos = localPos;
 
         if (parent != null)
             gameObject.transform.parent = parent.gameObject.transform;
@@ -64,8 +66,12 @@ public class Face : MonoBehaviour
         for (int i = 0; i < _subFaces.Length; i++)
         {
             _subFaces[i] = new GameObject().AddComponent<Face>();
-            _subFaces[i].Initialize(gameObject, childPlanetSettings, _direction);
         }
+
+        _subFaces[0].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 0));
+        _subFaces[1].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 0));
+        _subFaces[2].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 1));
+        _subFaces[3].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 1));
     }
 
     private void CreateVertices()
@@ -81,26 +87,28 @@ public class Face : MonoBehaviour
         {
             for (int x = 0; x <= halfSize; x++, i++)
             {
+                int tempX = x + (int)_localPos.x * halfSize;
+                int tempY = y + (int)_localPos.y * halfSize;
                 uvs[i] = new Vector2((float)x / _planetSettings.Size, (float)y / _planetSettings.Size);
                 switch (_direction)
                 {
                     case Directions.Front:
-                        SetVertex(i, x, y, 0);
+                        SetVertex(i, tempX, tempY, 0);
                         break;
                     case Directions.Back:
-                        SetVertex(i, x, y, _planetSettings.Size);
+                        SetVertex(i, tempX, tempY, _planetSettings.Size);
                         break;
                     case Directions.Top:
-                        SetVertex(i, x, _planetSettings.Size, y);
+                        SetVertex(i, tempX, _planetSettings.Size, tempY);
                         break;
                     case Directions.Bottom:
-                        SetVertex(i, x, 0, y);
+                        SetVertex(i, tempX, 0, tempY);
                         break;
                     case Directions.Right:
-                        SetVertex(i, _planetSettings.Size, y, x);
+                        SetVertex(i, _planetSettings.Size, tempY, tempX);
                         break;
                     case Directions.Left:
-                        SetVertex(i, 0, y, x);
+                        SetVertex(i, 0, tempY, tempX);
                         break;
                     default:
                         continue;

@@ -27,7 +27,8 @@ public class Planet : MonoBehaviour
         for (int i = 0; i < _faces.Length; i++)
         {
             _faces[i] = new GameObject().AddComponent<Face>();
-            _faces[i].Initialize(gameObject, _planetSettings, (Directions)i);
+            _faces[i].Initialize(gameObject, _planetSettings, (Directions) i, new Vector2(0,0));
+            _faces[i].SubDivide();
         }
     }
 
