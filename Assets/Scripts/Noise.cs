@@ -22,7 +22,7 @@ public class CustomNoise
     public float GetValueAt(float x, float y, float z)
     {
         var value = _fastNoise.GetNoise(x * _noiseSettings.Scale, y * _noiseSettings.Scale, z * _noiseSettings.Scale);
-        return value;
+        //return value;
         return (value + 1) / 2; //normalize the value from -1,1 to 0,1
     }
 }

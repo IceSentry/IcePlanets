@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Data {
-    [System.Serializable]
+    [Serializable]
     public struct NoiseSettings
     {
         [Range(0, 1)]

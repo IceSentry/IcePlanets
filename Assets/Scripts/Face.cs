@@ -12,10 +12,10 @@ public class Face : MonoBehaviour
     private Directions _direction;
     private CustomNoise _noise;
 
+    [SerializeField]
     private PlanetSettings _planetSettings;
 
-    [SerializeField]
-    private Gradient _planetGradient;
+    private Face[] _subFaces;
 
     public enum Directions
     {
@@ -33,6 +33,7 @@ public class Face : MonoBehaviour
         _direction = direction;
         _noise = new CustomNoise(planetSettings.NoiseSettings);
 
+
         if (parent != null)
             gameObject.transform.parent = parent.gameObject.transform;
 
@@ -41,8 +42,6 @@ public class Face : MonoBehaviour
         GetComponent<MeshFilter>().mesh = _mesh = new Mesh { name = "Procedural Face" };
         GetComponent<MeshRenderer>().materials = new[] { _planetSettings.Material };
         GetComponent<MeshCollider>().sharedMesh = _mesh;
-
-        _planetGradient = CreateColourGradient();
 
         Generate();
     }
@@ -53,17 +52,40 @@ public class Face : MonoBehaviour
         CreateTriangles();
     }
 
+    public void SubDivide()
+    {
+        GetComponent<MeshRenderer>().enabled = false;
+        GetComponent<MeshCollider>().enabled = false;
+
+        var childPlanetSettings = _planetSettings;
+        childPlanetSettings.Size *= 2;
+
+        _subFaces = new[]
+        {
+            new GameObject().AddComponent<Face>(),
+            new GameObject().AddComponent<Face>(),
+            new GameObject().AddComponent<Face>(),
+            new GameObject().AddComponent<Face>()
+        };
+
+        _subFaces[0].Initialize(gameObject, childPlanetSettings, _direction);
+        _subFaces[1].Initialize(gameObject, childPlanetSettings, _direction);
+        _subFaces[2].Initialize(gameObject, childPlanetSettings, _direction);
+        _subFaces[3].Initialize(gameObject, childPlanetSettings, _direction);
+    }
+
     private void CreateVertices()
     {
-        _vertices = new Vector3[(_planetSettings.Size + 1) * (_planetSettings.Size + 1)];
+        var halfSize = _planetSettings.Size / 2;
+
+        _vertices = new Vector3[(halfSize + 1) * (halfSize + 1)];
         _normals = new Vector3[_vertices.Length];
         _colors = new Color32[_vertices.Length];
-
         var uvs = new Vector2[_vertices.Length];
-
-        for (int i = 0, y = 0; y <= _planetSettings.Size; y++)
+      
+        for (int i = 0, y = 0; y <= halfSize; y++)
         {
-            for (int x = 0; x <= _planetSettings.Size; x++, i++)
+            for (int x = 0; x <= halfSize; x++, i++)
             {
                 uvs[i] = new Vector2((float)x / _planetSettings.Size, (float)y / _planetSettings.Size);
                 switch (_direction)
@@ -100,23 +122,25 @@ public class Face : MonoBehaviour
 
     private void CreateTriangles()
     {
-        var triangles = new int[_planetSettings.Size * _planetSettings.Size * 6];
+        var halfSize = _planetSettings.Size / 2;
 
-        for (int ti = 0, vi = 0, y = 0; y < _planetSettings.Size; y++, vi++)
+        var triangles = new int[halfSize * halfSize * 6];
+
+        for (int ti = 0, vi = 0, y = 0; y < halfSize; y++, vi++)
         {
-            for (int x = 0; x < _planetSettings.Size; x++, vi++)
+            for (int x = 0; x < halfSize; x++, vi++)
             {
                 switch (_direction)
                 {
                     case Directions.Front:
                     case Directions.Top:
                     case Directions.Right:
-                        ti = SetQuad(triangles, ti, vi, vi + 1, vi + _planetSettings.Size + 1, vi + _planetSettings.Size + 2);
+                        ti = SetQuad(triangles, ti, vi, vi + 1, vi + halfSize + 1, vi + halfSize + 2);
                         break;
                     case Directions.Back:
                     case Directions.Bottom:
                     case Directions.Left:
-                        ti = SetQuad(triangles, ti, vi + _planetSettings.Size + 2, vi + 1, vi + _planetSettings.Size + 1, vi);
+                        ti = SetQuad(triangles, ti, vi + halfSize + 2, vi + 1, vi + halfSize + 1, vi);
                         break;
                     default:
                         continue;
@@ -143,82 +167,25 @@ public class Face : MonoBehaviour
         float x2 = v.x * v.x;
         float y2 = v.y * v.y;
         float z2 = v.z * v.z;
-        Vector3 s;
-        s.x = v.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
-        s.y = v.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
-        s.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
+        v.x = v.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
+        v.y = v.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
+        v.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
 
-        _normals[i] = s;
+        _normals[i] = v;
         //_vertices[i] = s * _planetSettings.Radius;
 
-        var noiseValue = _noise.GetValueAt(s.x, s.y, s.z);
+        var noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
 
-        _colors[i] = _planetGradient.Evaluate(noiseValue);
+        _colors[i] = _planetSettings.Gradient.Evaluate(noiseValue);
 
-        var waterlevel = _planetSettings.WaterLevel;
-        if (noiseValue > waterlevel)
-            noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
-        else
-            noiseValue = 0.0f;
-
-        _vertices[i] = s * (_planetSettings.Radius +
-            noiseValue * (_planetSettings.HeightModifier / _planetSettings.Radius) * _planetSettings.Radius);
-        
-        //if (noiseValue < 0.5f)
-        //    _colors[i] = Color.blue;
-        //else if (noiseValue < 0.55f)
-        //    _colors[i] = Color.yellow;
-        //else if (noiseValue < 0.70f)
-        //    _colors[i] = Color.green;
-        //else if (noiseValue < 0.86f)
-        //    _colors[i] = Color.gray;
+        //Makes the water flat
+        //var waterlevel = _planetSettings.WaterLevel;
+        //if (noiseValue > waterlevel)
+        //    noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
         //else
-        //    _colors[i] = Color.white;
+        //    noiseValue = 0.0f;
+
+        _vertices[i] = v * (_planetSettings.Radius +
+            noiseValue * (_planetSettings.HeightModifier / _planetSettings.Radius) * _planetSettings.Radius);
     }
-
-    public Gradient CreateColourGradient()
-    {
-        var planetColors = new Gradient();
-
-        GradientColorKey[] gck = new GradientColorKey[8];
-        gck[0].color = CalculateGradientColour(0, 0, 128);
-        gck[0].time = CalculateGradientTime(-1.0000);
-        gck[1].color = CalculateGradientColour(0, 0, 255);
-        gck[1].time = CalculateGradientTime(-0.2500);
-        gck[2].color = CalculateGradientColour(0, 128, 255);
-        gck[2].time = CalculateGradientTime(0.0000);
-        gck[3].color = CalculateGradientColour(240, 240, 64);
-        gck[3].time = CalculateGradientTime(0.0625);
-        gck[4].color = CalculateGradientColour(32, 160, 0);
-        gck[4].time = CalculateGradientTime(0.1250);
-        gck[5].color = CalculateGradientColour(224, 224, 0);
-        gck[5].time = CalculateGradientTime(0.3750);
-        gck[6].color = CalculateGradientColour(128, 128, 128);
-        gck[6].time = CalculateGradientTime(0.7500);
-        gck[7].color = CalculateGradientColour(255, 255, 255);
-        gck[7].time = CalculateGradientTime(1.0000);
-
-        GradientAlphaKey[] gak = new GradientAlphaKey[2];
-        gak[0].alpha = 1f;
-        gak[0].time = 0f;
-        gak[1].alpha = 1f;
-        gak[1].time = 1f;
-
-        planetColors.SetKeys(gck, gak);
-
-        return planetColors;
-    }
-
-
-    Color CalculateGradientColour(int r, int g, int b)
-    {
-        return new Color((float)r / 255f, (float)g / 255f, (float)b / 255f);
-    }
-
-
-    float CalculateGradientTime(double t)
-    {
-        return (float)((t + 1) * 0.5);
-    }
-
 }
