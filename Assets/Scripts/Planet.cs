@@ -22,13 +22,16 @@ public class Planet : MonoBehaviour
         if (_faces != null)
             DestroyAllFaces();
 
+        _planetSettings.Noise = new Noise(_planetSettings.NoiseSettings);
+
         _faces = new Face[6];
 
         for (int i = 0; i < _faces.Length; i++)
         {
             _faces[i] = new GameObject().AddComponent<Face>();
-            _faces[i].Initialize(gameObject, _planetSettings, (Directions) i, new Vector2(0,0));
-            _faces[i].SubDivide();
+            _faces[i]
+                .Initialize(gameObject, _planetSettings, (Directions) i)
+                .SubDivide();
         }
     }
 

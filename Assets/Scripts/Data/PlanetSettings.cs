@@ -9,6 +9,7 @@ namespace Data {
         public float Radius;
         public float HeightModifier;
         public NoiseSettings NoiseSettings;
+        public Noise Noise;
         public Material Material;
         [Range(-1,1)]
         public float WaterLevel;

@@ -1,7 +1,7 @@
 ﻿using Data;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
+//[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class Face : MonoBehaviour
 {
     private Mesh _mesh;
@@ -10,7 +10,7 @@ public class Face : MonoBehaviour
     private Color32[] _colors;
 
     private Directions _direction;
-    private CustomNoise _noise;
+    private Noise _noise;
 
     [SerializeField]
     private PlanetSettings _planetSettings;
@@ -18,6 +18,10 @@ public class Face : MonoBehaviour
     private Face[] _subFaces;
 
     private Vector2 _localPos;
+
+    private MeshFilter _filter;
+    private MeshRenderer _renderer;
+    private MeshCollider _collider;
 
     public enum Directions
     {
@@ -29,23 +33,35 @@ public class Face : MonoBehaviour
         Left
     }
 
-    public void Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction, Vector2 localPos)
+    public Face Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction)
     {
         _planetSettings = planetSettings;
         _direction = direction;
-        _noise = new CustomNoise(planetSettings.NoiseSettings);
-        _localPos = localPos;
-
+        _noise = planetSettings.Noise;
+        
         if (parent != null)
             gameObject.transform.parent = parent.gameObject.transform;
 
         gameObject.name = direction.ToString();
 
-        GetComponent<MeshFilter>().mesh = _mesh = new Mesh { name = "Procedural Face" };
-        GetComponent<MeshRenderer>().materials = new[] { _planetSettings.Material };
-        GetComponent<MeshCollider>().sharedMesh = _mesh;
+        return this;
+    }
 
-        Generate();
+    public Face Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction, Vector2 localPos)
+    {
+        Initialize(parent, planetSettings, direction);
+
+        _localPos = localPos;
+
+        _filter = gameObject.AddComponent<MeshFilter>();
+        _renderer = gameObject.AddComponent<MeshRenderer>();
+        _collider = gameObject.AddComponent<MeshCollider>();
+
+        _filter.mesh = _mesh = new Mesh { name = "Procedural Face" };
+        _renderer.materials = new[] { _planetSettings.Material };
+        _collider.sharedMesh = _mesh;
+
+        return this;
     }
 
     private void Generate()
@@ -56,8 +72,10 @@ public class Face : MonoBehaviour
 
     public void SubDivide()
     {
-        GetComponent<MeshRenderer>().enabled = false;
-        GetComponent<MeshCollider>().enabled = false;
+        if(_renderer != null)
+            _renderer.enabled = false;
+        if(_collider != null)
+            _collider.enabled = false;
 
         var childPlanetSettings = _planetSettings;
         childPlanetSettings.Size *= 2;
@@ -68,10 +86,18 @@ public class Face : MonoBehaviour
             _subFaces[i] = new GameObject().AddComponent<Face>();
         }
 
-        _subFaces[0].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 0));
-        _subFaces[1].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 0));
-        _subFaces[2].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 1));
-        _subFaces[3].Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 1));
+        _subFaces[0]
+            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 0))
+            .Generate();
+        _subFaces[1]
+            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 0))
+            .Generate();
+        _subFaces[2]
+            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 1))
+            .Generate();
+        _subFaces[3]
+            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 1))
+            .Generate();
     }
 
     private void CreateVertices()

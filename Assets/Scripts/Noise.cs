@@ -1,12 +1,12 @@
 ﻿using Data;
 using UnityEngine;
 
-public class CustomNoise
+public class Noise
 {
     private readonly FastNoise _fastNoise;
     private readonly NoiseSettings _noiseSettings;
 
-    public CustomNoise(NoiseSettings settings)
+    public Noise(NoiseSettings settings)
     {
         _noiseSettings = settings;
 
