@@ -78,7 +78,6 @@ public class Face : MonoBehaviour
             _collider.enabled = false;
 
         var childPlanetSettings = _planetSettings;
-        childPlanetSettings.Size *= 2;
 
         _subFaces = new Face[4];
         for (int i = 0; i < _subFaces.Length; i++)
@@ -102,7 +101,7 @@ public class Face : MonoBehaviour
 
     private void CreateVertices()
     {
-        var halfSize = _planetSettings.Size / 2;
+        var halfSize = _planetSettings.MeshResolution / 2;
 
         _vertices = new Vector3[(halfSize + 1) * (halfSize + 1)];
         _normals = new Vector3[_vertices.Length];
@@ -115,23 +114,23 @@ public class Face : MonoBehaviour
             {
                 int tempX = x + (int)_localPos.x * halfSize;
                 int tempY = y + (int)_localPos.y * halfSize;
-                uvs[i] = new Vector2((float)x / _planetSettings.Size, (float)y / _planetSettings.Size);
+                uvs[i] = new Vector2((float)x / _planetSettings.MeshResolution, (float)y / _planetSettings.MeshResolution);
                 switch (_direction)
                 {
                     case Directions.Front:
                         SetVertex(i, tempX, tempY, 0);
                         break;
                     case Directions.Back:
-                        SetVertex(i, tempX, tempY, _planetSettings.Size);
+                        SetVertex(i, tempX, tempY, _planetSettings.MeshResolution);
                         break;
                     case Directions.Top:
-                        SetVertex(i, tempX, _planetSettings.Size, tempY);
+                        SetVertex(i, tempX, _planetSettings.MeshResolution, tempY);
                         break;
                     case Directions.Bottom:
                         SetVertex(i, tempX, 0, tempY);
                         break;
                     case Directions.Right:
-                        SetVertex(i, _planetSettings.Size, tempY, tempX);
+                        SetVertex(i, _planetSettings.MeshResolution, tempY, tempX);
                         break;
                     case Directions.Left:
                         SetVertex(i, 0, tempY, tempX);
@@ -150,7 +149,7 @@ public class Face : MonoBehaviour
 
     private void CreateTriangles()
     {
-        var halfSize = _planetSettings.Size / 2;
+        var halfSize = _planetSettings.MeshResolution / 2;
 
         var triangles = new int[halfSize * halfSize * 6];
 
@@ -191,7 +190,7 @@ public class Face : MonoBehaviour
     private void SetVertex(int i, int x, int y, int z)
     {
         //Spherify
-        Vector3 v = new Vector3(x, y, z) * 2f / _planetSettings.Size - Vector3.one;
+        Vector3 v = new Vector3(x, y, z) * 2f / _planetSettings.MeshResolution - Vector3.one;
         float x2 = v.x * v.x;
         float y2 = v.y * v.y;
         float z2 = v.z * v.z;

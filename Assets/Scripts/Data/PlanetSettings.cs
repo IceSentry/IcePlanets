@@ -5,7 +5,7 @@ namespace Data {
     [Serializable]
     public struct PlanetSettings
     {
-        public int Size;
+        public int MeshResolution;
         public float Radius;
         public float HeightModifier;
         public NoiseSettings NoiseSettings;
