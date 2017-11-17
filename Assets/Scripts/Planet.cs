@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Data;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Directions = Face.Directions;
 
 public class Planet : MonoBehaviour
 {
@@ -23,35 +24,11 @@ public class Planet : MonoBehaviour
 
         _faces = new Face[6];
 
-        GenerateFaces();
-        //gameObject.transform.position = new Vector3(0,0,_planetSettings.Radius);
-    }
-
-    private void GenerateFaces()
-    {
-        var front = new GameObject().AddComponent<Face>();
-        front.Initialize(gameObject, _planetSettings, Face.Directions.Front);
-        _faces[0] = front;
-
-        var back = new GameObject().AddComponent<Face>();
-        back.Initialize(gameObject, _planetSettings, Face.Directions.Back);
-        _faces[1] = back;
-
-        var top = new GameObject().AddComponent<Face>();
-        top.Initialize(gameObject, _planetSettings, Face.Directions.Top);
-        _faces[2] = top;
-
-        var bottom = new GameObject().AddComponent<Face>();
-        bottom.Initialize(gameObject, _planetSettings, Face.Directions.Bottom);
-        _faces[3] = bottom;
-
-        var left = new GameObject().AddComponent<Face>();
-        left.Initialize(gameObject, _planetSettings, Face.Directions.Left);
-        _faces[4] = left;
-
-        var right = new GameObject().AddComponent<Face>();
-        right.Initialize(gameObject, _planetSettings, Face.Directions.Right);
-        _faces[5] = right;
+        for (int i = 0; i < _faces.Length; i++)
+        {
+            _faces[i] = new GameObject().AddComponent<Face>();
+            _faces[i].Initialize(gameObject, _planetSettings, (Directions)i);
+        }
     }
 
     private void DestroyAllFaces()

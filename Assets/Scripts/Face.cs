@@ -60,18 +60,12 @@ public class Face : MonoBehaviour
         var childPlanetSettings = _planetSettings;
         childPlanetSettings.Size *= 2;
 
-        _subFaces = new[]
+        _subFaces = new Face[4];
+        for (int i = 0; i < _subFaces.Length; i++)
         {
-            new GameObject().AddComponent<Face>(),
-            new GameObject().AddComponent<Face>(),
-            new GameObject().AddComponent<Face>(),
-            new GameObject().AddComponent<Face>()
-        };
-
-        _subFaces[0].Initialize(gameObject, childPlanetSettings, _direction);
-        _subFaces[1].Initialize(gameObject, childPlanetSettings, _direction);
-        _subFaces[2].Initialize(gameObject, childPlanetSettings, _direction);
-        _subFaces[3].Initialize(gameObject, childPlanetSettings, _direction);
+            _subFaces[i] = new GameObject().AddComponent<Face>();
+            _subFaces[i].Initialize(gameObject, childPlanetSettings, _direction);
+        }
     }
 
     private void CreateVertices()
@@ -174,6 +168,8 @@ public class Face : MonoBehaviour
         _normals[i] = v;
         //_vertices[i] = s * _planetSettings.Radius;
 
+
+        //TODO maybe move this out of here and into Planet
         var noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
 
         _colors[i] = _planetSettings.Gradient.Evaluate(noiseValue);
