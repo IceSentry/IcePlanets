@@ -201,8 +201,7 @@ public class Face : MonoBehaviour
         _normals[i] = v;
         //_vertices[i] = s * _planetSettings.Radius;
 
-
-        //TODO maybe move this out of here and into Planet
+        //TODO move this out of here
         var noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
 
         _colors[i] = _planetSettings.Gradient.Evaluate(noiseValue);
