@@ -31,14 +31,19 @@ public class Planet : MonoBehaviour
             _faces[i] = new GameObject().AddComponent<Face>();
             _faces[i]
                 .Initialize(gameObject, _planetSettings, (Directions) i)
-                .SubDivide();
+                .Split();
         }
     }
 
     private void DestroyAllFaces()
     {
         var faces = new List<GameObject>();
-        foreach (var child in _faces) faces.Add(child.gameObject);
+        for (var i = 0; i < _faces.Length; i++)
+        {
+            Face face = _faces[i];
+            faces.Add(face.gameObject);
+        }
+
         if (Application.isEditor)
             faces.ForEach(DestroyImmediate);
         else

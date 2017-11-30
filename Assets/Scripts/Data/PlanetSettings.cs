@@ -14,5 +14,6 @@ namespace Data {
         [Range(-1,1)]
         public float WaterLevel;
         public Gradient Gradient;
+        public Transform LODTarget;
     }
 }

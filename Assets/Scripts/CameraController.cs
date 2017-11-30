@@ -31,17 +31,17 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
-        _rotationX += Input.GetAxis("Mouse X") * CameraSensitivity * Time.deltaTime;
-        _rotationY += Input.GetAxis("Mouse Y") * CameraSensitivity * Time.deltaTime;
-        _rotationY = Mathf.Clamp(_rotationY, -90, 90);
+        //_rotationX += Input.GetAxis("Mouse X") * CameraSensitivity * Time.deltaTime;
+        //_rotationY += Input.GetAxis("Mouse Y") * CameraSensitivity * Time.deltaTime;
+        //_rotationY = Mathf.Clamp(_rotationY, -90, 90);
 
-        transform.localRotation = Quaternion.AngleAxis(_rotationX, Vector3.up);
-        transform.localRotation *= Quaternion.AngleAxis(_rotationY, Vector3.left);
+        //transform.localRotation = Quaternion.AngleAxis(_rotationX, Vector3.up);
+        //transform.localRotation *= Quaternion.AngleAxis(_rotationY, Vector3.left);
 
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
@@ -63,21 +63,21 @@ public class CameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.Q)) { transform.position += transform.up * ClimbSpeed * Time.deltaTime; }
         if (Input.GetKey(KeyCode.E)) { transform.position -= transform.up * ClimbSpeed * Time.deltaTime; }
 
-        if (Input.GetKeyDown(KeyCode.End))
-        {
-            switch (Cursor.lockState)
-            {
-                case CursorLockMode.Locked:
-                    Cursor.lockState = CursorLockMode.None;
-                    break;
-                case CursorLockMode.None:
-                    Cursor.lockState = CursorLockMode.Locked;
-                    break;
-                case CursorLockMode.Confined:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.End))
+        //{
+        //    switch (Cursor.lockState)
+        //    {
+        //        case CursorLockMode.Locked:
+        //            Cursor.lockState = CursorLockMode.None;
+        //            break;
+        //        case CursorLockMode.None:
+        //            Cursor.lockState = CursorLockMode.Locked;
+        //            break;
+        //        case CursorLockMode.Confined:
+        //            break;
+        //        default:
+        //            throw new ArgumentOutOfRangeException();
+        //    }
+        //}
     }
 }

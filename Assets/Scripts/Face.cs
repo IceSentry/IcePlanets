@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using System.Collections.Generic;
+using Data;
 using UnityEngine;
 
 //[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
@@ -12,16 +13,18 @@ public class Face : MonoBehaviour
     private Directions _direction;
     private Noise _noise;
 
-    [SerializeField]
     private PlanetSettings _planetSettings;
 
     private Face[] _subFaces;
 
-    private Vector2 _localPos;
-
     private MeshFilter _filter;
     private MeshRenderer _renderer;
     private MeshCollider _collider;
+
+    private int _lodLevel;
+
+    private float _xOffset;
+    private float _yOffset;
 
     public enum Directions
     {
@@ -38,7 +41,7 @@ public class Face : MonoBehaviour
         _planetSettings = planetSettings;
         _direction = direction;
         _noise = planetSettings.Noise;
-        
+
         if (parent != null)
             gameObject.transform.parent = parent.gameObject.transform;
 
@@ -47,21 +50,44 @@ public class Face : MonoBehaviour
         return this;
     }
 
-    public Face Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction, Vector2 localPos)
+    private Face Initialize(GameObject parent, PlanetSettings planetSettings, Directions direction, float xOffset, float yOffset, int lodLevel)
     {
         Initialize(parent, planetSettings, direction);
 
-        _localPos = localPos;
+        _xOffset = xOffset;
+        _yOffset = yOffset;
 
         _filter = gameObject.AddComponent<MeshFilter>();
         _renderer = gameObject.AddComponent<MeshRenderer>();
-        _collider = gameObject.AddComponent<MeshCollider>();
+        if (lodLevel >= 10)
+            _collider = gameObject.AddComponent<MeshCollider>();
 
         _filter.mesh = _mesh = new Mesh { name = "Procedural Face" };
         _renderer.materials = new[] { _planetSettings.Material };
-        _collider.sharedMesh = _mesh;
+
+        if (lodLevel >= 10)
+            _collider.sharedMesh = _mesh;
+
+        _lodLevel = lodLevel;
 
         return this;
+    }
+
+    void Update()
+    {
+        var distance = Vector3.Distance(_planetSettings.LODTarget.position, gameObject.transform.position);
+
+        if (distance < _planetSettings.Radius * 2f && _lodLevel < 2)
+        {
+            if (_renderer != null)
+                _renderer.enabled = true;
+            Split();
+        }
+        else
+        {
+            if (_renderer != null)
+                _renderer.enabled = false;
+        }
     }
 
     private void Generate()
@@ -70,11 +96,13 @@ public class Face : MonoBehaviour
         CreateTriangles();
     }
 
-    public void SubDivide()
+    public void Split()
     {
-        if(_renderer != null)
+        if (_subFaces != null)
+            return;
+        if (_renderer != null)
             _renderer.enabled = false;
-        if(_collider != null)
+        if (_collider != null)
             _collider.enabled = false;
 
         var childPlanetSettings = _planetSettings;
@@ -85,54 +113,92 @@ public class Face : MonoBehaviour
             _subFaces[i] = new GameObject().AddComponent<Face>();
         }
 
+        var lodLevel = _lodLevel + 1;
+
+        var tempXOffset = _xOffset * 2f + _planetSettings.MeshResolution;
+        var tempYOffset = _yOffset * 2f + _planetSettings.MeshResolution;
+
         _subFaces[0]
-            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 0))
+            .Initialize(gameObject, childPlanetSettings, _direction, tempXOffset, tempYOffset, lodLevel)
             .Generate();
         _subFaces[1]
-            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 0))
+            .Initialize(gameObject, childPlanetSettings, _direction, tempXOffset, _yOffset * 2f, lodLevel)
             .Generate();
         _subFaces[2]
-            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(0, 1))
+            .Initialize(gameObject, childPlanetSettings, _direction, _xOffset * 2f, _yOffset * 2f, lodLevel)
             .Generate();
         _subFaces[3]
-            .Initialize(gameObject, childPlanetSettings, _direction, new Vector2(1, 1))
+            .Initialize(gameObject, childPlanetSettings, _direction, _xOffset * 2f, tempYOffset, lodLevel)
             .Generate();
+    }
+
+    public void Merge()
+    {
+        DestroyAllSubFaces();
+
+        if (_renderer != null)
+            _renderer.enabled = true;
+        if (_collider != null)
+            _collider.enabled = true;
+    }
+
+    private void DestroyAllSubFaces()
+    {
+        if (_subFaces == null)
+            return;
+
+        var faces = new List<GameObject>();
+        for (var i = 0; i < _subFaces.Length; i++)
+        {
+            Face face = _subFaces[i];
+            faces.Add(face.gameObject);
+        }
+
+        if (Application.isEditor)
+            faces.ForEach(DestroyImmediate);
+        else
+            faces.ForEach(Destroy);
+
+        _subFaces = null;
     }
 
     private void CreateVertices()
     {
-        var halfSize = _planetSettings.MeshResolution / 2;
-
-        _vertices = new Vector3[(halfSize + 1) * (halfSize + 1)];
+        _vertices = new Vector3[(_planetSettings.MeshResolution + 1) * (_planetSettings.MeshResolution + 1)];
         _normals = new Vector3[_vertices.Length];
         _colors = new Color32[_vertices.Length];
         var uvs = new Vector2[_vertices.Length];
-      
-        for (int i = 0, y = 0; y <= halfSize; y++)
+
+        var uvFactor = 1.0f / _planetSettings.MeshResolution;
+
+        for (int i = 0, y = 0; y <= _planetSettings.MeshResolution; y++)
         {
-            for (int x = 0; x <= halfSize; x++, i++)
+            for (int x = 0; x <= _planetSettings.MeshResolution; x++, i++)
             {
-                int tempX = x + (int)_localPos.x * halfSize;
-                int tempY = y + (int)_localPos.y * halfSize;
-                uvs[i] = new Vector2((float)x / _planetSettings.MeshResolution, (float)y / _planetSettings.MeshResolution);
+                uvs[i] = new Vector2(x * uvFactor, y * uvFactor);
+
+                var tempX = x + _xOffset;
+                var tempY = y + _yOffset;
+                var tempZ = _planetSettings.MeshResolution * Mathf.Pow(2, _lodLevel);
+
                 switch (_direction)
                 {
-                    case Directions.Front:
+                    case Face.Directions.Front:
                         SetVertex(i, tempX, tempY, 0);
                         break;
-                    case Directions.Back:
-                        SetVertex(i, tempX, tempY, _planetSettings.MeshResolution);
+                    case Face.Directions.Back:
+                        SetVertex(i, tempX, tempY, tempZ);
                         break;
-                    case Directions.Top:
-                        SetVertex(i, tempX, _planetSettings.MeshResolution, tempY);
+                    case Face.Directions.Top:
+                        SetVertex(i, tempX, tempZ, tempY);
                         break;
-                    case Directions.Bottom:
+                    case Face.Directions.Bottom:
                         SetVertex(i, tempX, 0, tempY);
                         break;
-                    case Directions.Right:
-                        SetVertex(i, _planetSettings.MeshResolution, tempY, tempX);
+                    case Face.Directions.Right:
+                        SetVertex(i, tempZ, tempY, tempX);
                         break;
-                    case Directions.Left:
+                    case Face.Directions.Left:
                         SetVertex(i, 0, tempY, tempX);
                         break;
                     default:
@@ -149,25 +215,23 @@ public class Face : MonoBehaviour
 
     private void CreateTriangles()
     {
-        var halfSize = _planetSettings.MeshResolution / 2;
+        var triangles = new int[_planetSettings.MeshResolution * _planetSettings.MeshResolution * 6];
 
-        var triangles = new int[halfSize * halfSize * 6];
-
-        for (int ti = 0, vi = 0, y = 0; y < halfSize; y++, vi++)
+        for (int ti = 0, vi = 0, y = 0; y < _planetSettings.MeshResolution; y++, vi++)
         {
-            for (int x = 0; x < halfSize; x++, vi++)
+            for (int x = 0; x < _planetSettings.MeshResolution; x++, vi++)
             {
                 switch (_direction)
                 {
-                    case Directions.Front:
-                    case Directions.Top:
-                    case Directions.Right:
-                        ti = SetQuad(triangles, ti, vi, vi + 1, vi + halfSize + 1, vi + halfSize + 2);
+                    case Face.Directions.Front:
+                    case Face.Directions.Top:
+                    case Face.Directions.Right:
+                        ti = SetQuad(triangles, ti, vi, vi + 1, vi + _planetSettings.MeshResolution + 1, vi + _planetSettings.MeshResolution + 2);
                         break;
-                    case Directions.Back:
-                    case Directions.Bottom:
-                    case Directions.Left:
-                        ti = SetQuad(triangles, ti, vi + halfSize + 2, vi + 1, vi + halfSize + 1, vi);
+                    case Face.Directions.Back:
+                    case Face.Directions.Bottom:
+                    case Face.Directions.Left:
+                        ti = SetQuad(triangles, ti, vi + _planetSettings.MeshResolution + 2, vi + 1, vi + _planetSettings.MeshResolution + 1, vi);
                         break;
                     default:
                         continue;
@@ -187,10 +251,13 @@ public class Face : MonoBehaviour
         return i + 6;
     }
 
-    private void SetVertex(int i, int x, int y, int z)
+    private void SetVertex(int i, float x, float y, float z)
     {
+        //_vertices[i] = new Vector3(x, y, z);
+        //return;
+
         //Spherify
-        Vector3 v = new Vector3(x, y, z) * 2f / _planetSettings.MeshResolution - Vector3.one;
+        Vector3 v = (new Vector3(x, y, z) * 2f) / (_planetSettings.MeshResolution * Mathf.Pow(2, _lodLevel)) - Vector3.one;
         float x2 = v.x * v.x;
         float y2 = v.y * v.y;
         float z2 = v.z * v.z;
@@ -199,19 +266,13 @@ public class Face : MonoBehaviour
         v.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
 
         _normals[i] = v;
-        //_vertices[i] = s * _planetSettings.Radius;
+        //_vertices[i] = v * _planetSettings.Radius;
+        //return;
 
         //TODO move this out of here
-        var noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
+        float noiseValue = _noise.GetValueAt(v.x, v.y, v.z);
 
         _colors[i] = _planetSettings.Gradient.Evaluate(noiseValue);
-
-        //Makes the water flat
-        //var waterlevel = _planetSettings.WaterLevel;
-        //if (noiseValue > waterlevel)
-        //    noiseValue = (noiseValue - waterlevel) * (1.0f / (1.0f - waterlevel));
-        //else
-        //    noiseValue = 0.0f;
 
         _vertices[i] = v * (_planetSettings.Radius +
             noiseValue * (_planetSettings.HeightModifier / _planetSettings.Radius) * _planetSettings.Radius);

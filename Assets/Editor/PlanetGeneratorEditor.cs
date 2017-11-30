@@ -1,25 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(PlanetGenerator))]
-public class PlanetGeneratorEditor : Editor {
+namespace Editor {
+    [CustomEditor(typeof(PlanetGenerator))]
+    public class PlanetGeneratorEditor : UnityEditor.Editor {
 
-    public override void OnInspectorGUI()
-    {
-        var mapGen = (PlanetGenerator)target;
-
-        DrawDefaultInspector();
-
-        if (GUILayout.Button("GeneratePlanet"))
+        public override void OnInspectorGUI()
         {
-            mapGen.GeneratePlanet();
-        }
+            var planetGenerator = (PlanetGenerator)target;
 
-        if (GUILayout.Button("Destroy all planets"))
-        {
-            mapGen.DestroyAllPlanets();
+            DrawDefaultInspector();
+
+            if (GUILayout.Button("GeneratePlanet"))
+            {
+                planetGenerator.GeneratePlanet();
+            }
+
+            if (GUILayout.Button("Destroy all planets"))
+            {
+                planetGenerator.DestroyAllPlanets();
+            }
         }
     }
 }
