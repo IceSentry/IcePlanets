@@ -1,19 +1,21 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Data {
+namespace Data
+{
     [Serializable]
-    public struct PlanetSettings
+    [CreateAssetMenu]
+    public class PlanetSettings : ScriptableObject
     {
-        public int MeshResolution;
-        public float Radius;
-        public float HeightModifier;
-        public NoiseSettings NoiseSettings;
-        public Noise Noise;
-        public Material Material;
-        [Range(-1,1)]
-        public float WaterLevel;
-        public Gradient Gradient;
+        [Range(2, 255)]
+        public int MeshResolution = 124;
+
+        [Expandable]
+        public ShapeSettings ShapeSettings;
+
+        [Expandable]
+        public ColorSettings ColorSettings;
+
         public Transform LODTarget;
     }
 }

@@ -1,83 +1,132 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    /*
-	EXTENDED FLYCAM
-		Desi Quintans (CowfaceGames.com), 17 August 2012.
-		Based on FlyThrough.js by Slin (http://wiki.unity3d.com/index.php/FlyThrough), 17 May 2011.
- 
-	LICENSE
-		Free as in speech, and free as in beer.
- 
-	FEATURES
-		WASD/Arrows:    Movement
-		          Q:    Climb
-		          E:    Drop
-                      Shift:    Move faster
-                    Control:    Move slower
-                        End:    Toggle cursor locking to screen (you can also press Ctrl+P to toggle play mode on and off).
-	*/
-
     public float CameraSensitivity = 90;
-    public float ClimbSpeed = 4;
     public float NormalMoveSpeed = 10;
     public float SlowMoveFactor = 0.25f;
-    public float FastMoveFactor = 3;
+    public float FastMoveFactor = 5;
 
-    private float _rotationX;
-    private float _rotationY;
+    private float rotationX;
+    private float rotationY;
+    private float rotationZ;
+
+    private CursorLockMode cursorMode;
 
     void Start()
     {
-        //Cursor.lockState = CursorLockMode.Locked;
+        cursorMode = CursorLockMode.Locked;
+        SetCursorState();
     }
 
     void Update()
     {
-        //_rotationX += Input.GetAxis("Mouse X") * CameraSensitivity * Time.deltaTime;
-        //_rotationY += Input.GetAxis("Mouse Y") * CameraSensitivity * Time.deltaTime;
-        //_rotationY = Mathf.Clamp(_rotationY, -90, 90);
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * CameraSensitivity, Space.Self);
+            transform.Rotate(Vector3.left * Input.GetAxis("Mouse Y") * CameraSensitivity, Space.Self);
+        }
 
-        //transform.localRotation = Quaternion.AngleAxis(_rotationX, Vector3.up);
-        //transform.localRotation *= Quaternion.AngleAxis(_rotationY, Vector3.left);
+        if (Input.GetKey(KeyCode.Q))
+        {
+            transform.Rotate(Vector3.forward * CameraSensitivity);
+        }
+
+        if (Input.GetKey(KeyCode.E))
+        {
+            transform.Rotate(-Vector3.forward * CameraSensitivity);
+        }
 
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            transform.position += transform.forward * (NormalMoveSpeed * FastMoveFactor) * Input.GetAxis("Vertical") * Time.deltaTime;
-            transform.position += transform.right * (NormalMoveSpeed * FastMoveFactor) * Input.GetAxis("Horizontal") * Time.deltaTime;
+            MoveCamera(FastMoveFactor);
         }
         else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
         {
-            transform.position += transform.forward * (NormalMoveSpeed * SlowMoveFactor) * Input.GetAxis("Vertical") * Time.deltaTime;
-            transform.position += transform.right * (NormalMoveSpeed * SlowMoveFactor) * Input.GetAxis("Horizontal") * Time.deltaTime;
+            MoveCamera(SlowMoveFactor);
         }
         else
         {
-            transform.position += transform.forward * NormalMoveSpeed * Input.GetAxis("Vertical") * Time.deltaTime;
-            transform.position += transform.right * NormalMoveSpeed * Input.GetAxis("Horizontal") * Time.deltaTime;
+            MoveCamera(1f);
+        }
+    }
+
+    void MoveCamera(float moveFactor)
+    {
+        transform.position += transform.forward * (NormalMoveSpeed * moveFactor) * Input.GetAxis("Vertical") * Time.deltaTime;
+        transform.position += transform.right * (NormalMoveSpeed * moveFactor) * Input.GetAxis("Horizontal") * Time.deltaTime;
+    }
+
+    // Apply requested cursor state
+    void SetCursorState()
+    {
+        Cursor.lockState = cursorMode;
+        Cursor.visible = (CursorLockMode.Locked != cursorMode);
+    }
+
+    void OnGUI()
+    {
+        GUILayout.BeginVertical();
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = cursorMode = CursorLockMode.None;
         }
 
+        switch (Cursor.lockState)
+        {
+            case CursorLockMode.None:
+                GUILayout.Label("Cursor is normal");
+                if (GUILayout.Button("Lock cursor"))
+                {
+                    cursorMode = CursorLockMode.Locked;
+                }
 
-        if (Input.GetKey(KeyCode.Q)) { transform.position += transform.up * ClimbSpeed * Time.deltaTime; }
-        if (Input.GetKey(KeyCode.E)) { transform.position -= transform.up * ClimbSpeed * Time.deltaTime; }
+                if (GUILayout.Button("Confine cursor"))
+                {
+                    cursorMode = CursorLockMode.Confined;
+                }
 
-        //if (Input.GetKeyDown(KeyCode.End))
-        //{
-        //    switch (Cursor.lockState)
-        //    {
-        //        case CursorLockMode.Locked:
-        //            Cursor.lockState = CursorLockMode.None;
-        //            break;
-        //        case CursorLockMode.None:
-        //            Cursor.lockState = CursorLockMode.Locked;
-        //            break;
-        //        case CursorLockMode.Confined:
-        //            break;
-        //        default:
-        //            throw new ArgumentOutOfRangeException();
-        //    }
-        //}
+                break;
+            case CursorLockMode.Confined:
+                GUILayout.Label("Cursor is confined");
+                if (GUILayout.Button("Lock cursor"))
+                {
+                    cursorMode = CursorLockMode.Locked;
+                }
+
+                if (GUILayout.Button("Release cursor"))
+                {
+                    cursorMode = CursorLockMode.None;
+                }
+
+                break;
+            case CursorLockMode.Locked:
+                GUILayout.Label("Cursor is locked");
+                if (GUILayout.Button("Unlock cursor"))
+                {
+                    cursorMode = CursorLockMode.None;
+                }
+
+                if (GUILayout.Button("Confine cursor"))
+                {
+                    cursorMode = CursorLockMode.Confined;
+                }
+
+                break;
+        }
+
+        GUILayout.EndVertical();
+
+        SetCursorState();
+    }
+
+    void OnPreRender()
+    {
+        GL.wireframe = true;
+    }
+    void OnPostRender()
+    {
+        GL.wireframe = false;
     }
 }
